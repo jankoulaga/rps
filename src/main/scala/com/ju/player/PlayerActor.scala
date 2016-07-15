@@ -1,6 +1,7 @@
 package com.ju.player
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import com.ju.rulebook.{Move, Result}
 
 /**
   * PlayerActor companion object
@@ -8,11 +9,8 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 object PlayerActor {
 
   sealed trait PlayerType
-
   case object Human extends PlayerType
-
   case object Computer extends PlayerType
-
   case object JoinGame
 
   def props(game: ActorRef) = Props(classOf[PlayerActor], game)
@@ -27,5 +25,11 @@ object PlayerActor {
 class PlayerActor(game: ActorRef) extends Actor with ActorLogging {
   game ! PlayerActor.JoinGame
 
-  override def receive: Receive = ???
+  override def receive: Receive = {
+    case move: Move =>
+      log.debug(s"${self.path.name} is sending $move")
+      game ! move
+    case result: Result =>
+      log.debug(s"${self.path.name} received $result")
+  }
 }

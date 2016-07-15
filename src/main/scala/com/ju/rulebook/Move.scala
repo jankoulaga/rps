@@ -1,5 +1,7 @@
 package com.ju.rulebook
 
+import scala.util.Random
+
 /**
   * A common trait for all the results
   */
@@ -55,4 +57,9 @@ case object Scissors extends Move {
     case Rock => Loss
     case _ => Draw
   }
+}
+
+object AutoMoveMaker {
+  val moves: Set[Move] = Set(Rock, Paper, Scissors)
+  def getMove = Random.shuffle(moves).head
 }
