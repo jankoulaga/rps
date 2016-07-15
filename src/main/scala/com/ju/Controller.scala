@@ -11,13 +11,13 @@ case object Init extends ControllerStep
 case object HumanPlayer extends ControllerStep
 case object MakeMoves extends ControllerStep
 case object AwaitForResult extends ControllerStep
-
-//Internal Messages
-private case object Ping
+case object WrapItAllUp extends ControllerStep
 
 sealed trait ControllerState
 case object Nothing extends ControllerState
 case class CurrentGame(game: ActorRef) extends ControllerState
+
+private case object ImDone
 
 object Controller {
   def props(display: ActorRef) = Props(classOf[Controller], display)
@@ -42,6 +42,9 @@ class Controller(display: ActorRef) extends FSM[ControllerStep, ControllerState]
         case PvsC =>
           display ! "Make your move: (r) for Rock, (p) for Paper, (s) for Scissors."
           goto(HumanPlayer) using CurrentGame(game)
+        case _ =>
+          self ! ImDone
+          goto(WrapItAllUp)
       }
   }
 
@@ -63,6 +66,12 @@ class Controller(display: ActorRef) extends FSM[ControllerStep, ControllerState]
     case Event(gameResult: GameResult, state: CurrentGame) =>
       val winner = gameResult.results.find(_.result == Win)
       winner.fold(display ! "It's a tie!"){player => display ! s"${player.name} won!"}
+      self ! ImDone
+      goto(WrapItAllUp)
+  }
+
+  when(WrapItAllUp) {
+    case Event(_, _) =>
       context.system.shutdown()
       stay()
   }
