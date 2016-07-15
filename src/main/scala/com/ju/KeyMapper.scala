@@ -10,13 +10,12 @@ sealed trait Action
   */
 trait KeyMapper[T] {
   val controller: ActorRef
-  val display : ActorRef
   val mappings : Map[T, Action]
   private def resolveKeyToAction(key: T): Option[Action] = mappings.get(key)
   def actionByKey(key: T) = resolveKeyToAction(key).foreach(controller ! _)
 }
 
-class SimpleMapper(val controller: ActorRef, val display: ActorRef) extends KeyMapper[Char] {
+class SimpleMapper(val controller: ActorRef) extends KeyMapper[Char] {
   val mappings: Map[Char, Action] = Map(
     'c' -> GameTypeSelection(CvsC),
     'h' -> GameTypeSelection(PvsC),
